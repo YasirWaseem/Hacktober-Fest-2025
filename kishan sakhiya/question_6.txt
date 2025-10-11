@@ -1,0 +1,144 @@
+Dart Data Types Overview
+=======================
+
+Dart, a programming language developed by Google, supports a variety of data types essential for building robust applications, particularly for Flutter development. Below is a comprehensive list of Dart's data types, their explanations, and examples.
+
+Core Data Types
+--------------
+
+1. Numbers
+   - Description: Dart supports two numeric types under the `num` superclass: `int` (integers) and `double` (floating-point numbers).
+   - int: Represents whole numbers. Size depends on the platform (up to 64 bits on native platforms, arbitrary precision in web apps).
+   - double: Represents 64-bit double-precision floating-point numbers.
+   - Example:
+     void main() {
+       int age = 25; // Integer
+       double height = 5.11; // Floating-point number
+       print('Age: $age'); // Output: Age: 25
+       print('Height: $height'); // Output: Height: 5.11
+       int sum = age + 10;
+       double product = height * 2;
+       print('Sum: $sum'); // Output: Sum: 35
+       print('Product: $product'); // Output: Product: 10.22
+     }
+
+2. Strings
+   - Description: Represents a sequence of characters (text). Supports single ('') or double ("") quotes and string interpolation using $.
+   - Example:
+     void main() {
+       String name = 'Alice';
+       String greeting = "Hello, $name!";
+       print(greeting); // Output: Hello, Alice!
+       String multiLine = '''
+       This is a
+       multi-line
+       string.''';
+       print(multiLine);
+     }
+
+3. Booleans
+   - Description: Represents true or false values, used for conditional logic.
+   - Example:
+     void main() {
+       bool isStudent = true;
+       bool isEmployed = false;
+       if (isStudent) {
+         print('You are a student!'); // Output: You are a student!
+       }
+       print('Is employed? $isEmployed'); // Output: Is employed? false
+     }
+
+4. Lists
+   - Description: Ordered collection of objects, zero-indexed, can contain elements of any type (preferably typed for safety).
+   - Example:
+     void main() {
+       List<String> fruits = ['Apple', 'Banana', 'Orange'];
+       print(fruits); // Output: [Apple, Banana, Orange]
+       print(fruits[1]); // Output: Banana
+       fruits.add('Mango');
+       print(fruits); // Output: [Apple, Banana, Orange, Mango]
+       List<dynamic> mixed = [1, 'Hello', true];
+       print(mixed); // Output: [1, Hello, true]
+     }
+
+5. Maps
+   - Description: Collection of key-value pairs, where keys and values can be of any type.
+   - Example:
+     void main() {
+       Map<String, int> ages = {
+         'Alice': 25,
+         'Bob': 30,
+         'Charlie': 35,
+       };
+       print(ages); // Output: {Alice: 25, Bob: 30, Charlie: 35}
+       print(ages['Alice']); // Output: 25
+       ages['David'] = 40;
+       print(ages); // Output: {Alice: 25, Bob: 30, Charlie: 35, David: 40}
+     }
+
+6. Sets
+   - Description: Unordered collection of unique elements; duplicates are ignored.
+   - Example:
+     void main() {
+       Set<String> colors = {'Red', 'Blue', 'Green'};
+       print(colors); // Output: {Red, Blue, Green}
+       colors.add('Yellow');
+       print(colors); // Output: {Red, Blue, Green, Yellow}
+       colors.add('Red'); // Duplicate, ignored
+       print(colors); // Output: {Red, Blue, Green, Yellow}
+     }
+
+Additional Data Types
+--------------------
+
+7. Runes
+   - Description: Represents Unicode code points in a string, useful for special characters like emojis.
+   - Example:
+     void main() {
+       String emoji = '😊';
+       Runes runes = emoji.runes;
+       print(runes); // Output: (128522)
+       print(String.fromCharCode(runes.first)); // Output: 😊
+     }
+
+8. Symbols
+   - Description: Represents identifiers in code, used for reflection or metadata (rarely used).
+   - Example:
+     void main() {
+       Symbol mySymbol = #myFunction;
+       print(mySymbol); // Output: Symbol("myFunction")
+     }
+
+9. Dynamic
+   - Description: Allows a variable to hold any type, bypassing static type checking (use sparingly).
+   - Example:
+     void main() {
+       dynamic variable = 42;
+       print(variable); // Output: 42
+       variable = 'Now a string';
+       print(variable); // Output: Now a string
+     }
+
+10. Null
+    - Description: Represents the absence of a value. With null safety, variables are non-nullable unless marked with ?.
+    - Example:
+      void main() {
+        String? nullableString = null;
+        print(nullableString); // Output: null
+        nullableString = 'Hello';
+        print(nullableString); // Output: Hello
+      }
+
+11. Void
+    - Description: Indicates a function returns no value.
+    - Example:
+      void main() {
+        void sayHello() {
+          print('Hello!');
+        }
+        sayHello(); // Output: Hello!
+      }
+
+Summary
+-------
+Dart has six core data types (int, double, String, bool, List, Map, Set) and additional types (Runes, Symbols, Dynamic, Null, Void) for specific use cases. These types, combined with Dart's null safety and generics, provide flexibility and robustness for application development.

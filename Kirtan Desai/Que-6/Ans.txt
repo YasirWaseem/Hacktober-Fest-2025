@@ -1,0 +1,8 @@
+Question:
+What is the difference between bridge networking and host networking in Docker?
+
+Ans:
+
+Bridge networking: is Docker’s default mode, where containers get their own private IP inside a virtual network created by Docker (like docker0). Communication with the outside world happens through NAT (Network Address Translation), so you must explicitly publish ports (e.g., -p 8080:80) to access services. This provides better isolation and security, making it ideal for most application deployments.
+
+Host networking, on the other hand, makes the container share the same network namespace as the host machine. This means the container does not get a separate IP — it directly uses the host’s IP and network interfaces. No port mapping is required, and network performance is slightly better due to the absence of NAT. However, it reduces isolation and may pose security risks.

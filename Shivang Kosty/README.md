@@ -6,6 +6,8 @@
 
 How do you evaluate a machine learning model’s performance? Explain metrics like accuracy, precision, recall, F1-score, and ROC-AUC.
 
+
+
 ---
 
 ## 2.
@@ -17,7 +19,6 @@ Explain the difference between CNN (Convolutional Neural Network) and RNN (Recur
 ## 3.
 
 What is gradient descent, and what are its variants?
-
 ---
 
 ## 4.

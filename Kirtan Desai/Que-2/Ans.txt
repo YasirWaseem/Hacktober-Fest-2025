@@ -1,0 +1,22 @@
+Question:
+How do you know which worker node is consuming more resources across the clusters using kubectl?
+
+Ans:
+
+First, I make sure the cluster has a Metrics Server or any monitoring tool (like Prometheus or Grafana). Without live CPU and memory data, I can’t measure anything.
+
+Once metrics are available, I approach it like checking which machine in a factory is working the hardest.
+
+1) I list all the nodes with their current CPU and memory usage.
+This immediately tells me which node is using more resources compared to the rest. I don’t care about exact numbers—I just look for the one with the highest percentage.
+
+2) I focus on that top consumer node.
+Now that I know which node is overloaded, I need to know why.
+
+3) I check which applications (pods) are running on that node.
+Usually, there will be one or two pods consuming most of the resources. This helps me understand whether it's a normal workload or a misbehaving service.
+
+4) I check the node’s pressure status.
+I verify if the node is facing memory pressure, disk pressure, or nearing its pod limit. This helps me decide if the node is temporarily busy or permanently overloaded.
+
+5) If I manage multiple clusters, I simply repeat the same check in each context.
