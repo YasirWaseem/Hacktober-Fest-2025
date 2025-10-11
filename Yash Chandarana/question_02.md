@@ -19,7 +19,6 @@ Low Bias, High Variance: A model with low bias and high variance will fit the tr
 High Bias, Low Variance: A model with high bias and low variance will not fit the training data well, leading to high training error, but it will generalize better to new data. This happens because the model is too simplistic and fails to capture important relationships in the data.
 
 Impact on Model Performance:
-
 The bias-variance tradeoff directly impacts a model’s ability to generalize:
 
 Underfitting (High Bias): A model with high bias and low variance will have poor predictive power because it is too simple to capture the underlying patterns in the data. This results in high error on both training and test sets.
@@ -27,5 +26,4 @@ Underfitting (High Bias): A model with high bias and low variance will have poor
 Overfitting (High Variance): A model with low bias and high variance will perform well on the training data but poorly on the test set because it is too sensitive to the training data and fails to generalize to new examples.
 
 Optimal Model Performance:
-
 The goal is to find the sweet spot where the model has low bias and low variance. At this point, the model generalizes well to new data, performing well both on the training data and unseen data. In practice, this balance is achieved by tuning model complexity (e.g., using regularization techniques, pruning trees, or choosing appropriate algorithms) and using sufficient training data to avoid overfitting.
