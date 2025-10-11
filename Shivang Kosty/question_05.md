@@ -7,4 +7,4 @@ To decide where to split, the tree evaluates all possible features and threshold
 
 For regression tasks, decision trees use Mean Squared Error (MSE) or similar measures to find splits that reduce the variation in target values within each group.
 
-In simple terms, a decision tree keeps asking the most useful questions to divide the data until it reaches a confident prediction. 
+In simple terms, a decision tree keeps asking the most useful questions to divide the data until it reaches a confident prediction.
