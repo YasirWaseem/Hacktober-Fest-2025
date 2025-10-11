@@ -13,7 +13,7 @@ Developers during development.
 Testers or QA engineers after functional testing.
 Example	: Testing if a login() function returns correct output for valid/invalid input.
 Testing how fast the login page loads under heavy traffic.
-
+ 
 2 Integration testing : testing the dataflow between two or more module .
 
 Its main goal is to identify defects between modules, such as incorrect data flow, communication errors, or mismatched functionality.
