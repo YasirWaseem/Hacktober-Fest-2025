@@ -1,0 +1,23 @@
+Question: How have you injected the secrets in ConfigMaps?
+
+Ans: 
+I should never inject secrets directly into ConfigMaps, as ConfigMaps are not designed for sensitive data. Instead, I'll use the Kubernetes Secret object for sensitive data and inject it into Pods like you would a ConfigMap, using either environment variables or mounted volumes.
+
+My Strategy:
+I would follow a systematic three-phase approach to inject non-sensitive configuration into applications using ConfigMaps.
+
+Phase 1: Data Identification & Organization
+First, I'd analyze the application to identify all configuration data and classify it into sensitive (passwords, tokens) and non-sensitive (URLs, ports, settings). Non-sensitive data goes into ConfigMaps, sensitive data into Secrets. I'd organize related configurations into logical ConfigMap groups rather than creating many small ones.
+
+Phase 2: ConfigMap Creation
+I'd create ConfigMaps using either declarative YAML manifests (for version control) or imperative commands (for quick testing). The ConfigMap stores data as key-value pairs in the Kubernetes etcd database, making it available cluster-wide within the namespace.
+
+Phase 3: Injection into Pods
+I'd inject the ConfigMap data into pods using one of three methods based on the use case:
+
+Environment variables: For simple key-value configs the application reads from env
+Volume mounts: For configuration files the application reads from disk
+Command-line arguments: For configs passed as startup parameters
+
+Selection Criteria:
+My method choice depends on how the application consumes configuration. If it reads environment variables, I use envFrom. If it expects config files, I mount as volumes. This keeps the container image environment-agnostic and follows cloud-native principles.
