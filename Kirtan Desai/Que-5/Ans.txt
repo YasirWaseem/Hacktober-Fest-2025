@@ -1,0 +1,6 @@
+Question:
+What is the `terraform taint` command?
+
+Ans:
+
+terraform taint is a command that marks a specific Terraform-managed resource for forced recreation. It doesn’t delete anything immediately — it simply tags the resource as “tainted,” meaning Terraform considers it unhealthy or invalid. On the next terraform apply, Terraform will destroy and rebuild only that resource, leaving the rest untouched. This is useful when a resource is misconfigured, partially broken, or changed manually outside Terraform, but Terraform itself doesn’t detect an issue. Although deprecated in newer versions in favor of terraform apply -replace="resource.name", the concept remains widely used to trigger selective resource replacement without modifying code.

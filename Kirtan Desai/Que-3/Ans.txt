@@ -1,0 +1,33 @@
+Question: 
+What are the steps for configuring Prometheus and Grafana for monitoring Kubernetes clusters?
+
+Ans: 
+
+To monitor a Kubernetes cluster, you need two main things:
+
+1) A system that collects metrics (Prometheus)
+
+2) A system that displays them visually (Grafana)
+
+Prometheus works like a data collector. It keeps asking different parts of the cluster — nodes, pods, and system components — “How much CPU are you using? How much memory?” and stores those answers. But Prometheus alone only gives technical outputs, so we connect it to Grafana, which turns that data into dashboards and graphs.
+
+Create a separate monitoring area in Kubernetes
+Think of it like making a special room called “monitoring” where all monitoring tools will live.
+
+Deploy Prometheus inside that area
+Prometheus is configured to automatically discover everything in the cluster. It finds all nodes and pods and continually collects their CPU, memory, and network usage.
+
+Deploy Grafana in the same area
+Grafana comes without data, so it needs a source. You point Grafana to Prometheus and say, “Use this as your data provider.”
+
+Connect Grafana to Prometheus
+This is like telling Grafana where Prometheus lives, so it can read all the stored metrics.
+
+Import Dashboards
+Grafana supports pre-made templates for Kubernetes. Once imported, you instantly get visualizations like:
+
+Which node is overloaded
+
+Pod-wise performance
+
+Cluster health trends over time

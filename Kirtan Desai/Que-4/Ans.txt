@@ -1,0 +1,24 @@
+Question:
+If 20 pods are running, how do you visualize the metrics of these pods in Grafana?
+
+Ans:
+
+When Prometheus is connected to Kubernetes, it automatically scrapes metrics from every pod using built-in exporters like cAdvisor or kube-state-metrics. Each pod exposes metrics such as:
+
+CPU usage
+Memory consumption
+Network I/O
+Restart count
+Status (Running/CrashLoopBackOff, etc.)
+
+Grafana does not store metrics itself — it only reads them from Prometheus and displays them through dashboards and panels.
+
+When 20 pods are running, Grafana typically visualizes them in one of these formats:
+
+1) Table View — Each row represents a pod, with columns like CPU %, Memory %, Namespace, Node Location, etc.
+
+2) Line Graphs / Time Series — Each pod gets its own line over time (e.g., CPU usage trends of all 20 pods).
+
+3) Bar Charts / Heatmaps — Helps compare pod-wise resource usage quickly.
+
+4) Sortable & Filterable Panels — You can filter by namespace, deployment, or labels, so even if there are 200 pods, you only focus on the relevant group.
