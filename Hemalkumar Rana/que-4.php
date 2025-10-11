@@ -1,4 +1,8 @@
 <?php
+
+//shortest palindrome 
+
+
 function shortestPalindrome($s) {
     $rev = strrev($s);
     $combined = $s . '#' . $rev;
@@ -36,3 +40,5 @@ echo "Enter a string: ";
 $s = trim(fgets(STDIN));
 
 echo "Shortest Palindrome: " . shortestPalindrome($s) . PHP_EOL;
+
+?>  
