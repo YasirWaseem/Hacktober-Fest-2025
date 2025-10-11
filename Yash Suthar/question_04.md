@@ -1,11 +1,8 @@
 ## 4. Dart Coding Question 1: Reverse a Linked List
-
 Given a singly linked list, write a Dart function to **reverse the list in-place** and return the new head.
-
 ### Example:
 
 * Input:
-
 ```dart
 1 -> 2 -> 3 -> 4 -> 5
 ```
