@@ -5,13 +5,11 @@ Given a string `s`, write a Dart function that returns the **first non-repeating
 ### Example:
 
 * Input:
-
 ```dart
 "leetcode"
 ```
 
 * Output:
-
 ```dart
 'l'
 ```
@@ -19,7 +17,6 @@ Given a string `s`, write a Dart function that returns the **first non-repeating
 ---
 
 ### Solution
-
 This problem can be solved efficiently by using a hash map (or a `Map` in Dart) to store the frequency of each character.
 
 The approach is two-fold:
