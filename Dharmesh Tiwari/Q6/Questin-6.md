@@ -1,0 +1,6 @@
+Questopn:- 6. What is the difference between manual testing and automation testing?
+Answer :- Manual Testing is a process where testers execute test cases manually without using any automation tools or scripts. It requires human effort to perform each step, observe results, and verify if the software behaves as expected. This type of testing is best suited for exploratory, usability, and ad-hoc testing, where human judgment is important. However, it can be time-consuming and error-prone for large or repetitive tasks.
+    Example: A tester manually enters different usernames and passwords on a login page to verify if the system allows valid users and rejects invalid ones.
+
+Automation Testing, on the other hand, is performed using special tools or scripts to execute test cases automatically. It helps in saving time, increasing accuracy, and improving efficiency, especially for regression, performance, and load testing. Once the test scripts are created, they can be reused multiple times without manual intervention. However, it requires initial investment and programming knowledge.
+    Example: A Selenium script automatically tests the login functionality with multiple sets of credentials and verifies the output without any human effort.
