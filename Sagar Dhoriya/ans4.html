@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sudoku Solver with Hints</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex flex-col items-center min-h-screen p-6">
+
+<h1 class="text-2xl font-bold mb-6">Sudoku Solver</h1>
+
+<!-- Difficulty Tabs -->
+<div class="flex space-x-2 mb-4">
+  <label class="cursor-pointer relative">
+    <input type="radio" name="difficulty" value="low" class="peer absolute opacity-0" checked>
+    <div class="px-4 py-2 rounded-lg bg-blue-500 text-white peer-checked:bg-blue-700 peer-checked:font-bold">Low</div>
+  </label>
+  <label class="cursor-pointer relative">
+    <input type="radio" name="difficulty" value="medium" class="peer absolute opacity-0">
+    <div class="px-4 py-2 rounded-lg bg-blue-500 text-white peer-checked:bg-blue-700 peer-checked:font-bold">Medium</div>
+  </label>
+  <label class="cursor-pointer relative">
+    <input type="radio" name="difficulty" value="high" class="peer absolute opacity-0">
+    <div class="px-4 py-2 rounded-lg bg-blue-500 text-white peer-checked:bg-blue-700 peer-checked:font-bold">High</div>
+  </label>
+  <label class="cursor-pointer relative">
+    <input type="radio" name="difficulty" value="highest" class="peer absolute opacity-0">
+    <div class="px-4 py-2 rounded-lg bg-blue-500 text-white peer-checked:bg-blue-700 peer-checked:font-bold">Highest</div>
+  </label>
+  <label class="cursor-pointer relative">
+    <input type="radio" name="difficulty" value="madman" class="peer absolute opacity-0">
+    <div class="px-4 py-2 rounded-lg bg-blue-500 text-white peer-checked:bg-blue-700 peer-checked:font-bold">Mad Man</div>
+  </label>
+</div>
+
+<!-- Suggestion/Hint Radio -->
+<div class="flex space-x-2 mb-6">
+  <label class="cursor-pointer relative">
+    <input type="radio" name="hintMode" value="none" class="peer absolute opacity-0" checked>
+    <div class="px-4 py-2 rounded-lg bg-gray-400 text-white peer-checked:bg-green-600 peer-checked:font-bold">None</div>
+  </label>
+  <label class="cursor-pointer relative">
+    <input type="radio" name="hintMode" value="hint" class="peer absolute opacity-0">
+    <div class="px-4 py-2 rounded-lg bg-gray-400 text-white peer-checked:bg-green-600 peer-checked:font-bold">Hint</div>
+  </label>
+</div>
+
+<!-- Sudoku Grid -->
+<table id="sudoku-grid" class="border-collapse border border-gray-600 mb-6"></table>
+
+<div class="flex space-x-2 mb-4">
+  <button id="solveBtn" class="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600">Solve</button>
+  <button id="newBtn" class="px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">New Puzzle</button>
+  <button id="hintBtn" class="px-6 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">Hint</button>
+</div>
+
+<script>
+const size = 9;
+const table = document.getElementById('sudoku-grid');
+
+// Difficulty hint limits [min_givens, max_givens, max_hints]
+const difficultyLevels = {
+  low:     [35, 40, 10],
+  medium:  [30, 34,  8],
+  high:    [25, 29,  6],
+  highest: [20, 24,  4],
+  madman:  [15, 19,  2]
+};
+
+let solutionGrid = []; // full solution for the current puzzle
+let hintsUsed = 0;
+
+// =============== UI helpers ===============
+function createGrid() {
+  table.innerHTML = '';
+  for (let row = 0; row < size; row++) {
+    const tr = document.createElement('tr');
+    for (let col = 0; col < size; col++) {
+      const td = document.createElement('td');
+      td.classList.add('border', 'border-gray-600', 'w-10', 'h-10');
+      if (row % 3 === 0) td.classList.add('border-t-2');
+      if (col % 3 === 0) td.classList.add('border-l-2');
+      if (row === 8) td.classList.add('border-b-2');
+      if (col === 8) td.classList.add('border-r-2');
+
+      const input = document.createElement('input');
+      input.setAttribute('type', 'number');
+      input.setAttribute('min', '1');
+      input.setAttribute('max', '9');
+      input.className = 'w-full h-full text-center text-lg outline-none bg-white';
+      input.addEventListener('input', (e) => {
+        // keep only digits 1-9
+        const v = e.target.value.replace(/[^1-9]/g, '');
+        e.target.value = v.slice(0, 1);
+        e.target.classList.remove('bg-green-300'); // clear hint highlight when user types
+      });
+      td.appendChild(input);
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+}
+
+function getGrid() {
+  const grid = Array.from({ length: size }, () => Array(size).fill(0));
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const v = table.rows[r].cells[c].firstChild.value;
+      grid[r][c] = v ? parseInt(v, 10) : 0;
+    }
+  }
+  return grid;
+}
+
+function setGrid(grid, lockGivens = true) {
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const cell = table.rows[r].cells[c].firstChild;
+      cell.value = grid[r][c] || '';
+      const isGiven = lockGivens && grid[r][c] !== 0;
+      cell.disabled = !!isGiven;
+      cell.classList.remove('bg-green-300');
+      if (isGiven) {
+        cell.classList.add('bg-gray-200', 'font-semibold');
+      } else {
+        cell.classList.remove('bg-gray-200', 'font-semibold');
+      }
+    }
+  }
+}
+
+// =============== Core Sudoku logic ===============
+function copyGrid(grid) {
+  return grid.map(row => row.slice());
+}
+
+function emptyGrid() {
+  return Array.from({ length: size }, () => Array(size).fill(0));
+}
+
+function shuffledDigits() {
+  const arr = [1,2,3,4,5,6,7,8,9];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function canPlace(grid, row, col, num) {
+  for (let x = 0; x < size; x++) {
+    if (grid[row][x] === num || grid[x][col] === num) return false;
+  }
+  const sr = row - (row % 3);
+  const sc = col - (col % 3);
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (grid[sr + i][sc + j] === num) return false;
+    }
+  }
+  return true;
+}
+
+function findEmptyCell(grid) {
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (grid[r][c] === 0) return [r, c];
+    }
+  }
+  return null;
+}
+
+// Backtracking solver (fills in place)
+function solveInPlace(grid) {
+  const pos = findEmptyCell(grid);
+  if (!pos) return true; // solved
+  const [r, c] = pos;
+  for (const num of shuffledDigits()) {
+    if (canPlace(grid, r, c, num)) {
+      grid[r][c] = num;
+      if (solveInPlace(grid)) return true;
+      grid[r][c] = 0;
+    }
+  }
+  return false;
+}
+
+// Deterministic order solver for counting solutions
+function countSolutions(grid, limit = 2) {
+  const pos = findEmptyCell(grid);
+  if (!pos) return 1; // one solution found
+
+  const [r, c] = pos;
+  let count = 0;
+
+  for (let num = 1; num <= 9; num++) {
+    if (canPlace(grid, r, c, num)) {
+      grid[r][c] = num;
+      count += countSolutions(grid, limit);
+      grid[r][c] = 0; // always revert
+      if (count >= limit) return count; // early stop
+    }
+  }
+  return count;
+}
+
+// Generate a full valid completed board
+function generateFullSolution() {
+  const grid = emptyGrid();
+  solveInPlace(grid); // randomized digits ensure varied boards
+  return grid;
+}
+
+// Carve puzzle from a full solution while preserving uniqueness
+function carveUniquePuzzleFrom(solution, targetGivens) {
+  const puzzle = copyGrid(solution);
+
+  // shuffle all 81 positions
+  const positions = [];
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) positions.push([r, c]);
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+
+  let givens = 81;
+
+  for (const [r, c] of positions) {
+    if (givens <= targetGivens) break;
+    const backup = puzzle[r][c];
+    if (backup === 0) continue;
+
+    puzzle[r][c] = 0;
+    const test = copyGrid(puzzle);
+    const solutions = countSolutions(test, 2); // we only care if >1
+    if (solutions !== 1) {
+      // revert — removing this broke uniqueness
+      puzzle[r][c] = backup;
+    } else {
+      givens--;
+    }
+  }
+
+  return puzzle; // may end with >= targetGivens if uniqueness constrained
+}
+
+function countGivens(grid) {
+  let c = 0;
+  for (let r = 0; r < size; r++) for (let col = 0; col < size; col++) if (grid[r][col] !== 0) c++;
+  return c;
+}
+
+// =============== App features ===============
+function generatePuzzle() {
+  hintsUsed = 0;
+
+  const diff = document.querySelector('input[name="difficulty"]:checked').value;
+  const [minFill, maxFill] = difficultyLevels[diff];
+  const targetGivens = Math.floor(Math.random() * (maxFill - minFill + 1)) + minFill;
+
+  // Try a few times to hit target givens with uniqueness; fall back to closest
+  let bestPuzzle = null;
+  let bestDelta = Infinity;
+  let bestSolution = null;
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const full = generateFullSolution();
+    const puzzle = carveUniquePuzzleFrom(full, targetGivens);
+    const g = countGivens(puzzle);
+    const delta = Math.abs(g - targetGivens);
+
+    if (delta < bestDelta) {
+      bestDelta = delta;
+      bestPuzzle = puzzle;
+      bestSolution = full;
+    }
+    if (g === targetGivens) break;
+  }
+
+  solutionGrid = copyGrid(bestSolution);
+  setGrid(bestPuzzle, true);
+}
+
+function solveSudoku() {
+  const grid = getGrid();
+  const work = copyGrid(grid);
+  const ok = countSolutions(copyGrid(work), 2); // quick sanity (0 or >1 -> reject)
+  if (ok !== 1 && ok !== 0) {
+    // multiple solutions given current entries; still can show one valid completion
+    // but keep behavior simple for now
+  }
+  if (solveInPlace(work)) {
+    setGrid(work, true);
+  } else {
+    alert('No solution exists from the current state!');
+  }
+}
+
+function giveHint() {
+  const mode = document.querySelector('input[name="hintMode"]:checked').value;
+  if (mode !== 'hint') return;
+
+  const diff = document.querySelector('input[name="difficulty"]:checked').value;
+  const maxHints = difficultyLevels[diff][2];
+
+  if (hintsUsed >= maxHints) {
+    alert('Max hints reached!');
+    return;
+  }
+
+  const current = getGrid();
+  const empties = [];
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (current[r][c] === 0) empties.push([r, c]);
+    }
+  }
+  if (empties.length === 0) return;
+
+  const [r, c] = empties[Math.floor(Math.random() * empties.length)];
+  const cell = table.rows[r].cells[c].firstChild;
+  cell.value = solutionGrid[r][c];
+  cell.classList.add('bg-green-300');
+  cell.disabled = true; // lock in as given once hinted
+  hintsUsed++;
+}
+
+// =============== Wire up ===============
+createGrid();
+document.getElementById('solveBtn').addEventListener('click', solveSudoku);
+document.getElementById('newBtn').addEventListener('click', generatePuzzle);
+document.getElementById('hintBtn').addEventListener('click', giveHint);
+document.querySelectorAll('input[name="difficulty"]').forEach(radio => {
+  radio.addEventListener('change', generatePuzzle);
+});
+
+// First load
+generatePuzzle();
+</script>
+</body>
+</html>
