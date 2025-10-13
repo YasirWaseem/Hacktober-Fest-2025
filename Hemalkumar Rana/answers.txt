@@ -1,0 +1,216 @@
+Question 1)  What’s the difference between using Redis as a cache vs Redis as a session/store driver in Laravel?
+
+
+
+-->
+1. Redis as a Cache Driver
+
+Purpose: Used for temporary data storage to speed up performance.
+Configured in: config/cache.php
+
+Characteristics:
+
+Data is usually short-lived (like query results, API responses, rendered views).
+
+Entries often have an expiry time (TTL).
+
+Typically safe to lose if Redis is flushed — app can regenerate it from DB or other sources.
+
+Can use Redis’s advanced features like tags, sets, sorted sets if you implement custom caching.
+
+✅ Use case: speeding up queries, caching config/data, storing temporary results.
+
+2. Redis as a Session/Store Driver
+
+Purpose: Stores persistent session data across requests.
+
+Configured in: config/session.php → 'driver' => 'redis'
+
+
+Characteristics:
+
+Data belongs to a specific user/session.
+
+Managed by Laravel’s session handling (session IDs, cookies, expiration).
+
+If Redis is flushed, users will be logged out or lose their carts.
+
+Requires a more reliable Redis setup (persistence, maybe clustering/replication) compared to cache.
+
+✅ Use case: user authentication sessions, shopping carts, multi-request workflows.
+
+
+Question 2) How do you implement cache tags in Laravel?  
+When should they be avoided?
+
+-->
+
+Cache tags let you group related cache items so you can flush them together, without clearing the entire cache.
+
+Example: imagine you cache hotels, restaurants, and events. Instead of manually clearing each cache key, you can tag them and flush all related items at once.
+
+Laravel provides a Cache::tags() method (only supported on drivers like Redis and Memcached).
+
+Example 1: Store with tags
+Cache::tags(['hotels'])->put('hotel_1', $hotelData, 3600);
+Cache::tags(['hotels'])->put('hotel_2', $hotelData2, 3600);
+
+Example 2: Retrieve with tags
+$hotel = Cache::tags(['hotels'])->get('hotel_1');
+
+Example 3: Flush tagged items only
+Cache::tags(['hotels'])->flush(); 
+// Removes only hotel-related cache, leaves others (restaurants, events) untouched
+
+Example 4: Multiple tags
+Cache::tags(['hotels', 'luxury'])->put('hotel_3', $luxuryHotelData, 3600);
+
+// Can flush by a specific group
+Cache::tags(['luxury'])->flush();
+
+🔹 3. When Should You Avoid Cache Tags?
+
+While useful, cache tags are not always the right choice. Avoid them if:
+
+Driver Doesn’t Support Tags
+
+file, database, and dynamodb cache drivers don’t support tags.
+
+Only Redis and Memcached fully support them in Laravel.
+
+Performance Concerns
+
+Tags add overhead because Laravel needs to manage extra references.
+
+For very large-scale apps with millions of cache keys, flushing tags can cause performance hits.
+
+Overuse / Wrong Abstraction
+
+If you’re tagging every single cache item, you might be better off with:
+
+Key prefixing (e.g., hotel:1, hotel:2)
+
+Or a more granular invalidation strategy.
+
+Clustered Redis without proper config
+
+Tags in Redis rely on sets of references. In Redis cluster/sharded setups, this can become inefficient unless properly tuned.
+
+Question 3) Explain the difference between route caching, config caching, and view caching.  
+What pitfalls can occur with each?
+
+
+Answer -->
+
+Route Caching
+🔹 Purpose:
+
+Improves performance by compiling all routes into a single, serialized file, so Laravel doesn’t have to parse route definitions on every request.
+
+🔹 Command:
+php artisan route:cache
+
+
+Clears the cache:
+
+php artisan route:clear
+
+🔹 When It Helps:
+
+When your app has many routes (especially loaded from multiple files or with middleware).
+
+Great for production environments.
+
+🔹 Pitfalls:
+
+❌ Closures Not Allowed
+
+You cannot use route closures when caching routes.
+
+// ❌ This breaks route:cache
+Route::get('/test', function () { return 'Hi'; });
+
+
+You must use a controller method instead.
+
+⚠️ Adding/Removing Routes
+
+After adding or modifying routes, you must re-run:
+
+php artisan route:clear
+php artisan route:cache
+
+
+⚠️ Environment-Specific Config
+
+If your routes depend on environment variables or conditional logic, caching might freeze them with incorrect values.
+
+⚙️ 2. Config Caching
+🔹 Purpose:
+
+Combines all config files (config/*.php) into one serialized file (bootstrap/cache/config.php) for faster loading.
+
+🔹 Command:
+php artisan config:cache
+
+
+Clear it:
+
+php artisan config:clear
+
+🔹 When It Helps:
+
+Always recommended in production.
+
+Speeds up app bootstrapping by avoiding multiple file loads.
+
+🔹 Pitfalls:
+
+⚠️ Environment Variables Not Available
+
+After caching, Laravel doesn’t read .env anymore.
+Only values already loaded into config/ are used.
+
+So, if you change .env (like DB credentials) but don’t re-cache, app still uses old ones.
+
+⚠️ Dynamic Config Logic
+
+If your config files contain logic depending on environment or runtime state, those won’t update until you re-cache.
+
+⚠️ Missing Files
+
+If a config file references something not yet available (like a class or missing key), caching can break the app.
+
+⚙️ 3. View Caching
+🔹 Purpose:
+
+Compiles all Blade templates into plain PHP files ahead of time to reduce runtime compilation cost.
+
+🔹 Command:
+php artisan view:cache
+
+
+Clear it:
+
+php artisan view:clear
+
+🔹 When It Helps:
+
+Improves performance when your app has many Blade views.
+
+Reduces template compilation time on first load.
+
+🔹 Pitfalls:
+
+⚠️ Stale Templates
+
+If you edit a view but forget to clear cache, Laravel may continue serving the old compiled version.
+
+⚠️ Dynamic or Conditional Includes
+
+If you generate or include dynamic views at runtime, precompiling may miss them.
+
+⚠️ Storage Issues
+
+The compiled views are stored in storage/framework/views.
+If permissions are wrong or folder is missing, you’ll get view errors.
